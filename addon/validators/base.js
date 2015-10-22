@@ -3,6 +3,8 @@ import Ember from 'ember';
 var get = Ember.get;
 var set = Ember.set;
 
+var DEBOUNCE_TIMEOUT = 300;
+
 export default Ember.Object.extend({
   errors: Ember.computed.deprecatingAlias('validationErrors'),
   init: function() {
@@ -12,7 +14,9 @@ export default Ember.Object.extend({
       'if': get(this, 'options.if'),
       unless: get(this, 'options.unless')
     };
-    this.model.addObserver(this.property, this, this._validate);
+    this.model.addObserver(this.property, this, () => {
+      Ember.run.debounce(this, this._validate, DEBOUNCE_TIMEOUT, true);
+    });
   },
   addObserversForDependentValidationKeys: Ember.on('init', function() {
     this.dependentValidationKeys.forEach(function(key) {
